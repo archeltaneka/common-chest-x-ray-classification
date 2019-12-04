@@ -13,10 +13,10 @@ convolution = Convolution2D(filter_shape=(3,3), num_filters=8)
 maxpool = MaxPool2D()
 softmax = Softmax(13*13*8, 10)
 
+# forward propagation phase
 def forward_propagation(img, label):
     output = convolution.conv2d(img/255)
     output = maxpool.pool(output)
-    output = softmax.flatten(output)
     output = softmax.dense(output)
     
     loss = -np.log(output[label]) # -log(x) --> softmax loss function
@@ -24,16 +24,28 @@ def forward_propagation(img, label):
     
     return output, loss, acc
 
-total_loss = 0
-accuracy = 0
-
-for i, (img, label) in enumerate(zip(x_train[:1000], y_train[:1000])): # let's train first 1000 data for simplicity 
-    _, loss, acc = forward_propagation(img, label)
-    total_loss += loss
-    accuracy += acc
+# train the model
+def train(img, label, learning_rate):
+    # forward propagation
+    output, loss, acc = forward_propagation(img, label)
     
+    # initial gradient
+    grad = np.zeros(10) # 10 different classes
+    grad[label] = -1 / output[label]
+    
+    # back propagation
+    grad = softmax.back_propagation(grad, learning_rate)
+    
+    return loss, acc
+
+l = 0
+acc = 0
+
+for i, (img, label) in enumerate(zip(x_train[:1000], y_train[:1000])):
     if i % 100 == 0:
-        print("Epoch", i, ": Loss= ", total_loss/100, "| Accuracy=", accuracy, "%")
-        
-        total_loss = 0
-        accuracy = 0
+        print("Epoch #%d: Loss=%.3f | Accuracy=%.2f%%" % (i, l/100, acc))
+        l = 0
+        acc = 0
+    loss, accuracy = train(img, label, learning_rate=0.005)
+    l += loss
+    acc += accuracy
