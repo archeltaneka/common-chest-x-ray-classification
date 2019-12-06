@@ -11,12 +11,17 @@ class Convolution2D:
         
     def iterate(self, img, filter_shape):
         height, width = img.shape
-        height = int(((height - self.filter_shape[0]) + (2 * 1)) / self.stride + 1)
-        width = int(((width - self.filter_shape[0]) + (2 * 1)) / self.stride + 1)
+        height = int((height + 2 * self.pad_size - self.filter_shape[0]) / self.stride) + 1
+        width = int((width + 2 * self.pad_size - self.filter_shape[0]) / self.stride) + 1
+        # check for odd heights and widths
+        if height % 2 != 0 and width % 2 != 0:
+            height += 1
+            width += 1
         
         for i in range(height-(filter_shape[0]-1)):
             for j in range(width-(filter_shape[0]-1)):
                 output = img[i*self.stride:(i*self.stride+filter_shape[0]), j*self.stride:(j*self.stride+filter_shape[0])]
+                
                 yield output, i, j # 'yield' keyword will return any values and continue from the last value returned
     
     def conv2d(self, inputs):
@@ -27,6 +32,7 @@ class Convolution2D:
             height, width = inputs.shape
             
             pad_size = int(((height * self.stride) - height + self.filter_shape[0] - 1) / 2)
+            self.pad_size = pad_size
 
             inputs = padding(inputs, pad_size) # apply padding according to the pad_size
             height, width = inputs.shape # reinitialize height and width with padded image
@@ -37,13 +43,14 @@ class Convolution2D:
             if new_height % 2 != 0 and new_width % 2 != 0:
                 new_height += 1
                 new_width += 1
-
+                
             output = np.zeros((new_height, new_width, self.num_filters))
             
         elif(self.padding.lower() == 'valid'): # valid/no padding
             height, width = inputs.shape
+            self.pad_size = 0
             output = np.zeros((height-(self.filter_shape[0]-1), width-(self.filter_shape[0]-1), self.num_filters))
-        
+
         for region, i, j in self.iterate(inputs, self.filter_shape):
             output[i, j] = np.sum(region * self.filters, axis=(1,2))
         
