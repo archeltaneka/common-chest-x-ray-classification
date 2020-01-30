@@ -26,14 +26,14 @@ class Softmax:
             return max(0, z)
     
     # forward propagate phase
-    def forward_propagation(self, img, label, output, reg_lambda):
+    def forward_propagation(self, img, label, output, reg_lambda=1e-3):
         # -log(x) --> softmax loss function
         loss = (-np.log(output[label])) + (1/2 * reg_lambda * np.sum(self.weights ** 2)) # + regularization term
         acc = 1 if np.argmax(output) == label else 0 # increase the accuracy if the predicted label = actual label
 
         return output, loss, acc
     
-    def back_propagation(self, dL, learning_rate, reg_lambda):
+    def back_propagation(self, dL, learning_rate, reg_lambda=1e-3):
         for i, grad in enumerate(dL):
             if grad == 0: continue; # ignores 0 gradient
             

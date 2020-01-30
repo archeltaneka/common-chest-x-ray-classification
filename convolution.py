@@ -2,12 +2,20 @@ import numpy as np
 from utils import padding
 
 class Convolution2D:
-    def __init__(self, filter_shape, num_filters, padding, stride):
+    def __init__(self, filter_shape, num_filters, padding, stride, activation='relu', kernel_init='None'):
         self.filter_shape = filter_shape
         self.num_filters = num_filters
         self.padding = padding
         self.stride = stride
-        self.filters = np.random.randn(num_filters, filter_shape[0], filter_shape[0]) # random initialization
+        self.activation = activation
+        self.kernel_init = kernel_init
+        
+        # random kernel initialization
+        if self.kernel_init.lower() == 'none':
+            self.filters = np.random.randn(num_filters, filter_shape[0], filter_shape[0])
+        # xavier kernel initialization a.k.a glorot normal
+        elif self.kernel_init.lower() == 'xavier':
+            self.filters = np.random.randn(num_filters, filter_shape[0], filter_shape[0]) / 9 # 1 / N
         
     def iterate(self, img, filter_shape):
         height, width = img.shape
@@ -17,14 +25,18 @@ class Convolution2D:
         if height % 2 != 0 and width % 2 != 0:
             height += 1
             width += 1
+#         print(height)
+#         print(width)
+#         print(filter_shape[0]-1)
         
         for i in range(height-(filter_shape[0]-1)):
             for j in range(width-(filter_shape[0]-1)):
                 output = img[i*self.stride:(i*self.stride+filter_shape[0]), j*self.stride:(j*self.stride+filter_shape[0])]
-                
+#                 print(output, i, j)
                 yield output, i, j # 'yield' keyword will return any values and continue from the last value returned
     
     def conv2d(self, inputs):
+#         print("Before padding: ", inputs.shape)
         self.last_input = inputs # cache the last input for backpropagation
     
         # padding
@@ -50,10 +62,15 @@ class Convolution2D:
             height, width = inputs.shape
             self.pad_size = 0
             output = np.zeros((height-(self.filter_shape[0]-1), width-(self.filter_shape[0]-1), self.num_filters))
-
+            
+#         print("After padding: ", inputs.shape)
+        
         for region, i, j in self.iterate(inputs, self.filter_shape):
             output[i, j] = np.sum(region * self.filters, axis=(1,2))
+            if self.activation.lower() == 'relu':
+                output[i, j] = np.maximum(0, output[i, j])
         
+#         print("After convolution: ", output.shape)
         return output
 
     def back_propagation(self, dL, learning_rate):
