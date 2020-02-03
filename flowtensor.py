@@ -2,13 +2,14 @@ import numpy as np
 from utils import padding
 
 class Convolution2D:
-    def __init__(self, filter_shape, num_filters, padding, stride, activation='relu', kernel_init='None'):
+    def __init__(self, filter_shape, num_filters, padding, stride, activation='relu', kernel_init='None', debugging='False'):
         self.filter_shape = filter_shape
         self.num_filters = num_filters
         self.padding = padding
         self.stride = stride
         self.activation = activation
         self.kernel_init = kernel_init
+        self.debugging = debugging
         
         # random kernel initialization
         if self.kernel_init.lower() == 'none':
@@ -36,7 +37,7 @@ class Convolution2D:
                 yield output, i, j # 'yield' keyword will return any values and continue from the last value returned
     
     def conv2d(self, inputs):
-#         print("Before padding: ", inputs.shape)
+        if self.debugging==True: print("Image before padding:", inputs.shape)
         self.last_input = inputs # cache the last input for backpropagation
     
         # padding
@@ -63,14 +64,15 @@ class Convolution2D:
             self.pad_size = 0
             output = np.zeros((height-(self.filter_shape[0]-1), width-(self.filter_shape[0]-1), self.num_filters))
             
-#         print("After padding: ", inputs.shape)
+        if self.debugging==True: print("Image after padding:", inputs.shape)
         
         for region, i, j in self.iterate(inputs, self.filter_shape):
             output[i, j] = np.sum(region * self.filters, axis=(1,2))
             if self.activation.lower() == 'relu':
                 output[i, j] = np.maximum(0, output[i, j])
         
-#         print("After convolution: ", output.shape)
+        if self.debugging==True:print("Total parameters after convolution: ", output.shape, "=", output.shape[0]*output.shape[1]*output.shape[2])
+            
         return output
 
     def back_propagation(self, dL, learning_rate):
@@ -86,8 +88,9 @@ class Convolution2D:
         return None
     
 class MaxPool2D:
-    def __init__(self, pool_size):
+    def __init__(self, pool_size, debugging=False):
         self.pool_size = pool_size
+        self.debugging = debugging
     
     def iterate(self, img):
         height, width, _ = img.shape
@@ -109,6 +112,8 @@ class MaxPool2D:
         for img_region, i, j in self.iterate(inputs):
             output[i, j] = np.max(img_region, axis=(0,1))
         
+        if self.debugging==True: print("Dimension after maxpooling:", output.shape)
+        
         return output
     
     # backpropagation
@@ -129,10 +134,11 @@ class MaxPool2D:
     
 class Softmax:
     # initialize random weights and zero biases
-    def __init__(self, num_features, num_nodes, activation):
+    def __init__(self, num_features, num_nodes, activation, debugging='False'):
         self.weights = np.random.randn(num_features, num_nodes) / num_features
         self.biases = np.zeros(num_nodes)
         self.activation = activation
+        if debugging==True: print("Total parameters to train:", num_features, "x", num_nodes, "=", num_features * num_nodes)
     
     # connects flattened layer with a fully connected layer (dense)
     def dense(self, inputs):
@@ -157,7 +163,7 @@ class Softmax:
         # -log(x) --> softmax loss function
         loss = (-np.log(output[label])) + (1/2 * reg_lambda * np.sum(self.weights ** 2)) # + regularization term
         acc = 1 if np.argmax(output) == label else 0 # increase the accuracy if the predicted label = actual label
-
+        
         return output, loss, acc
     
     def back_propagation(self, dL, learning_rate, reg_lambda=1e-3):
