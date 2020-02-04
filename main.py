@@ -9,7 +9,7 @@ from tensorflow.keras.datasets import mnist, fashion_mnist
 (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
 # define convolution, pooling, and fully connected(dense) layers
-convolution = Convolution2D(filter_shape=(3,3), num_filters=8, padding='same', stride=1, kernel_init='none', debugging=False)
+convolution = Convolution2D(filter_shape=(3,3), num_filters=8, padding='same', activation='relu', stride=1, kernel_init='random', debugging=False)
 maxpool = MaxPool2D(pool_size=2, debugging=False)
 temp = convolution.conv2d(x_train[0]/255) # save img dimensions
 temp = maxpool.pool(temp)
