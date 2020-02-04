@@ -2,7 +2,31 @@ import numpy as np
 from utils import padding
 
 class Convolution2D:
-    def __init__(self, filter_shape, num_filters, padding, stride, activation='relu', kernel_init='None', debugging='False'):
+    '''
+        Convolutional 2D layer
+        
+        This class will create a convolutional layer, convolved with an image
+        
+        # Arguments
+            filter_shape: tuple/list of 2 integers. This specifies the height and width of the kernel (convolution window)
+            num_filters: Integer, the number of filters (depth) in the convolution
+            padding: 'same' padding will retain the image's shape, 'valid' does not retain image shape (image's shape
+                      will shrink after convolution)
+            stride: Integer, specifies the number of strides of the convolution
+            activation: The kernel activation function. As of this time, 'relu' is the only activation function.
+            kernel_init: Initializers for kernel weights. Use 'random' or 'xavier', 'random' by default.
+            debugging: Boolean. Setting this to True will enable debugging feature, False by default.
+            
+        # Input
+            2D object with shape:
+            `(height, width)`
+            
+        # Output
+            3D object with shape:
+            `(new_height, new_width, filters)` 
+    '''
+    
+    def __init__(self, filter_shape, num_filters, padding, stride, activation, kernel_init='random', debugging='False'):
         self.filter_shape = filter_shape
         self.num_filters = num_filters
         self.padding = padding
@@ -12,30 +36,28 @@ class Convolution2D:
         self.debugging = debugging
         
         # random kernel initialization
-        if self.kernel_init.lower() == 'none':
+        if self.kernel_init.lower() == 'random':
             self.filters = np.random.randn(num_filters, filter_shape[0], filter_shape[0])
         # xavier kernel initialization a.k.a glorot normal
         elif self.kernel_init.lower() == 'xavier':
             self.filters = np.random.randn(num_filters, filter_shape[0], filter_shape[0]) / 9 # 1 / N
-        
+    
+    # convolving through the entire image pixels with the filter
     def iterate(self, img, filter_shape):
         height, width = img.shape
         height = int((height + 2 * self.pad_size - self.filter_shape[0]) / self.stride) + 1
         width = int((width + 2 * self.pad_size - self.filter_shape[0]) / self.stride) + 1
-        # check for odd heights and widths
+        # check for odd heights and widths, then round the height and width to the nearest integer
         if height % 2 != 0 and width % 2 != 0:
             height += 1
             width += 1
-#         print(height)
-#         print(width)
-#         print(filter_shape[0]-1)
         
         for i in range(height-(filter_shape[0]-1)):
             for j in range(width-(filter_shape[0]-1)):
                 output = img[i*self.stride:(i*self.stride+filter_shape[0]), j*self.stride:(j*self.stride+filter_shape[0])]
-#                 print(output, i, j)
                 yield output, i, j # 'yield' keyword will return any values and continue from the last value returned
     
+    # convolutional operation which is similar with the matrix multiplication
     def conv2d(self, inputs):
         if self.debugging==True: print("Image before padding:", inputs.shape)
         self.last_input = inputs # cache the last input for backpropagation
@@ -74,7 +96,8 @@ class Convolution2D:
         if self.debugging==True:print("Total parameters after convolution: ", output.shape, "=", output.shape[0]*output.shape[1]*output.shape[2])
             
         return output
-
+    
+    # backpropagation step
     def back_propagation(self, dL, learning_rate):
         dL_filters = np.zeros(self.filters.shape)
         
@@ -86,12 +109,33 @@ class Convolution2D:
         self.filters -= learning_rate * dL_filters
         
         return None
+
+
     
 class MaxPool2D:
+    '''
+        MaxPool 2D layer
+        
+        This class will create a maxpool layer, which takes the biggest (maximum) value from the input
+        
+        # Arguments
+            pool_size: Integer. Specifies the pooling scale. e.g: pool_size=2 will halve the input dimensions. 
+            debugging: Boolean. Setting this to True will enable debugging feature, False by default.
+            
+        # Input
+            3D object with shape:
+            `(height, width, filters)`
+            
+        # Output
+            3D object with shape:
+            `(new_height, new_width, filters)` 
+    '''
+    
     def __init__(self, pool_size, debugging=False):
         self.pool_size = pool_size
         self.debugging = debugging
     
+    # iterate through the entire input to get the maximum value
     def iterate(self, img):
         height, width, _ = img.shape
         h = height//self.pool_size
@@ -110,13 +154,13 @@ class MaxPool2D:
         output = np.zeros((height//self.pool_size, width//self.pool_size, num_filters))
         
         for img_region, i, j in self.iterate(inputs):
-            output[i, j] = np.max(img_region, axis=(0,1))
+            output[i, j] = np.max(img_region, axis=(0,1)) # np.max to retrieve the biggest (maximum) value
         
         if self.debugging==True: print("Dimension after maxpooling:", output.shape)
         
         return output
     
-    # backpropagation
+    # backpropagation step
     def back_propagation(self, dL_output):
         dL_input = np.zeros((self.last_input.shape))
         
@@ -131,8 +175,30 @@ class MaxPool2D:
                         if img_region[k, l, m] == maxi[m]: # if the max values match, copy the gradient
                             dL_input[i*2+k, j*2+l, m] = dL_output[i, j, m]
         return dL_input
+
+    
     
 class Softmax:
+    '''
+        Softmax layer
+        
+        This class will flatten and connect input layer with a dense connected layer
+        
+        # Arguments
+            num_features: Integer. Specifies the last layer's number of features
+            num_nodes: Integer. Specifies the number of nodes in the layer.
+            activation: Specifies the activation function. 'softmax' or 'relu'
+            debugging: Boolean. Setting this to True will enable debugging feature, False by default.
+            
+        # Input
+            3D object with shape:
+            `(height, width, filters)`
+            
+        # Output
+            2D object with shape:
+            `(num_features, predictions)` 
+    '''
+    
     # initialize random weights and zero biases
     def __init__(self, num_features, num_nodes, activation, debugging='False'):
         self.weights = np.random.randn(num_features, num_nodes) / num_features
@@ -166,6 +232,7 @@ class Softmax:
         
         return output, loss, acc
     
+    # backpropagation stetp
     def back_propagation(self, dL, learning_rate, reg_lambda=1e-3):
         for i, grad in enumerate(dL):
             if grad == 0: continue; # ignores 0 gradient

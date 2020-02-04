@@ -1,15 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+'''
+    Image padding
+    
+    # Arguments
+        img: 2D tuple/list which is 2D array of an image
+        pad: size of padding
+     
+    # Input
+        (nxn) tuple/list
+    
+    # Output
+        (nxn) padded tuple/list
+    
+    *See usage on flowtensor.Convolutional2D.conv2d
+'''
 def padding(img, pad):
     img_pad = np.pad(img, ((pad, pad), (pad,pad)), 'constant', constant_values=0)
     
     return img_pad
 
-def load_data():
-    (x1, y1), (x2, y2) = mnist.load_data()
-    return (x1, y1), (x2, y2)
+'''
+    Build a neural network model
+    
+    # Arguments
+        c: flowtensor.Convolution2D object of convolutional model
+        m: flowtensor.MaxPool2D object of pooling model
+        s: flowtensor.Softmax object of dense model
+        img: mxn array/tuple of an image.
 
+'''
 def build_model(c, m, s, img):
     train_model = c.conv2d(img/255)
     train_model = m.pool(train_model)
@@ -17,6 +38,19 @@ def build_model(c, m, s, img):
     
     return train_model
 
+
+'''
+    Compile a neural network model
+    
+    # Arguments
+        c: flowtensor.Convolution2D object of convolutional model
+        m: flowtensor.MaxPool2D object of pooling model
+        s: flowtensor.Softmax object of dense model
+        img: mxn array/tuple of an image.
+        label: nx1 array/list. Label of the image
+        learning_rate: Integer. Specifies how fast/slow the model learns
+
+'''
 def compile_model(c, m, s, img, label, learning_rate):
     model = build_model(c, m, s, img)
     # forward propagation step
@@ -33,7 +67,19 @@ def compile_model(c, m, s, img, label, learning_rate):
     
     return loss, acc
 
-
+'''
+    Train a model
+    
+    # Arguments:
+        c: flowtensor.Convolution2D object of convolutional model
+        m: flowtensor.MaxPool2D object of pooling model
+        s: flowtensor.Softmax object of dense model
+        epochs: Integer. Specifies the iteration through the entire dataset
+        lr: Float. Specifies the learning rate of the model
+        features: mxn array/tuple. Training features
+        labels: nx1 array/list. Training labels
+    
+'''
 def train(c, m, s, epochs, lr, features, labels):
     loss_dict = []
     acc_dict = []
@@ -61,6 +107,17 @@ def train(c, m, s, epochs, lr, features, labels):
     
     return loss_dict, acc_dict
 
+'''
+    Test a model
+    
+    # Arguments:
+        c: flowtensor.Convolution2D object of convolutional model
+        m: flowtensor.MaxPool2D object of pooling model
+        s: flowtensor.Softmax object of dense model
+        X_test: mxn array/tuple. Test data
+        y_test: nx1 array/list. Test label
+    
+'''
 def test(c, m, s, X_test, y_test):
     loss = 0
     accuracy = 0
@@ -72,14 +129,26 @@ def test(c, m, s, X_test, y_test):
 
     print("Test Loss: ", loss/len(X_test))
     print("Test Accuracy: ", accuracy/len(y_test))
+
+'''
+    Display/plot a list of loss
     
+    # Arguments:
+        l: array/list of loss
+'''
 def show_loss_graph(l):
     plt.plot([i / 100 for i in l])
     plt.title('Model Loss')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.show()
+
+'''
+    Display/plot a list of accuracy
     
+    # Arguments:
+        l: array/list of accuracy
+'''
 def show_acc_graph(a):
     plt.plot(a)
     plt.title('Training Accuracy')
