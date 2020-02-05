@@ -186,7 +186,7 @@ class Softmax:
         
         # Arguments
             num_features: Integer. Specifies the last layer's number of features
-            num_nodes: Integer. Specifies the number of nodes in the layer.
+            num_nodes: Integer. Specifies the number of nodes in the layer (the number of classes in the dataset).
             activation: Specifies the activation function. 'softmax' or 'relu'
             debugging: Boolean. Setting this to True will enable debugging feature, False by default.
             
