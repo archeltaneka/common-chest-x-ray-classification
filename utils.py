@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 '''
     Image padding
@@ -86,12 +87,13 @@ def train(c, m, s, epochs, lr, features, labels):
     NUM_EPOCHS = epochs
     learning_rate = lr
 
-    for epoch in range(NUM_EPOCHS):  
+    for epoch in range(NUM_EPOCHS):
+        start = time.time() # starts the wall time
         print("============= EPOCH", epoch+1, "=============")
         total_loss = 0
         accuracy = 0
 
-        for i, (img, label) in enumerate(zip(features, labels)): # let's train first 1000 data for simplicity 
+        for i, (img, label) in enumerate(zip(features, labels)):
             # build the complete model
             if i % 100 == 0 and i != 0:
                 print("Step", i, ": Loss=", total_loss/100, "| Accuracy=", accuracy, "%")
@@ -104,6 +106,10 @@ def train(c, m, s, epochs, lr, features, labels):
             
         loss_dict.append(total_loss)
         acc_dict.append(accuracy)
+        
+        end = time.time()
+        # display time taken for training
+        print("Training time:", int(end-start), "s")
     
     return loss_dict, acc_dict
 
@@ -123,13 +129,18 @@ def test(c, m, s, X_test, y_test):
     accuracy = 0
     for img, label in zip(X_test, y_test):
         test_model = build_model(c, m, s, img)
-        _, l, acc = s.forward_propagation(img, label, test_model, reg_lambda=1e-3)
+        _, l, acc = s.forward_propagation(img, label, test_model, reg_lambda=1e-2)
         loss += l
         accuracy += acc
 
     print("Test Loss: ", loss/len(X_test))
     print("Test Accuracy: ", accuracy/len(y_test))
 
+def predict(c, m, s, img, label):
+    test_model = build_model(c, m, s, img)
+    out, _, _ = s.forward_propagation(img, label, test_model, reg_lambda=1e-2)
+    
+    return np.argmax(out)
 '''
     Display/plot a list of loss
     
