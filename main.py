@@ -14,7 +14,7 @@ maxpool = MaxPool2D(pool_size=2, debugging=False)
 temp = convolution.conv2d(x_train[0]/255) # save img dimensions
 temp = maxpool.pool(temp)
 tmp_shape = temp.shape
-softmax = Softmax(tmp_shape[0]*tmp_shape[1]*tmp_shape[2], 10, activation='softmax', debugging=False)
+softmax = Softmax(tmp_shape[0]*tmp_shape[1]*tmp_shape[2], 10, activation='softmax', regularizer='l2', debugging=False)
 
 # train the model
 l, a = train(convolution, maxpool, softmax, epochs=5, lr=0.01, features=x_train[:1000], labels=y_train[:1000])

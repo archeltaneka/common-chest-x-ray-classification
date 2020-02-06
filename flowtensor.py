@@ -200,10 +200,11 @@ class Softmax:
     '''
     
     # initialize random weights and zero biases
-    def __init__(self, num_features, num_nodes, activation, debugging='False'):
+    def __init__(self, num_features, num_nodes, activation, regularizer='none', debugging='False'):
         self.weights = np.random.randn(num_features, num_nodes) / num_features
         self.biases = np.zeros(num_nodes)
         self.activation = activation
+        self.regularizer = regularizer
         if debugging==True: print("Total parameters to train:", num_features, "x", num_nodes, "=", num_features * num_nodes)
     
     # connects flattened layer with a fully connected layer (dense)
@@ -225,15 +226,20 @@ class Softmax:
             return max(0, z)
     
     # forward propagate phase
-    def forward_propagation(self, img, label, output, reg_lambda=1e-3):
+    def forward_propagation(self, img, label, output, reg_lambda=1e-2):
         # -log(x) --> softmax loss function
-        loss = (-np.log(output[label])) + (1/2 * reg_lambda * np.sum(self.weights ** 2)) # + regularization term
+        loss = (-np.log(output[label]))
+        
+        # regularizer
+        if self.regularizer.lower() == 'l2':
+            loss = loss + (1/2 * reg_lambda * np.sum(self.weights ** 2)) # + (1/2) * reg_lambda * (w^2) --> regularization term
+        
         acc = 1 if np.argmax(output) == label else 0 # increase the accuracy if the predicted label = actual label
         
         return output, loss, acc
     
     # backpropagation stetp
-    def back_propagation(self, dL, learning_rate, reg_lambda=1e-3):
+    def back_propagation(self, dL, learning_rate, reg_lambda=1e-2):
         for i, grad in enumerate(dL):
             if grad == 0: continue; # ignores 0 gradient
             
