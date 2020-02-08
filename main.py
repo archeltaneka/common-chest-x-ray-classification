@@ -1,7 +1,7 @@
 import numpy as np
 # import our custom library
-from flowtensor import Convolution2D, MaxPool2D, Softmax
-from utils import train, test, show_loss_graph, show_acc_graph
+from lib.flowtensor import Convolution2D, MaxPool2D, Softmax
+from lib.utils import train, test, show_loss_graph, show_acc_graph
 # let's test with mnist datasets
 from tensorflow.keras.datasets import mnist, fashion_mnist
 
