@@ -134,7 +134,7 @@ def test(c, m, s, X_test, y_test):
         accuracy += acc
 
     print("Test Loss: ", loss/len(X_test))
-    print("Test Accuracy: ", accuracy/len(y_test))
+    print("Test Accuracy: ", accuracy/len(y_test), "(", accuracy/len(y_test) * 100, "% )")
 
 def predict(c, m, s, img, label):
     test_model = build_model(c, m, s, img)
