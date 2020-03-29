@@ -1,5 +1,5 @@
 import numpy as np
-from utils import padding
+from lib.utils import padding
 
 class Convolution2D:
     '''
