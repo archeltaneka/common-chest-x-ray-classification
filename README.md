@@ -79,5 +79,5 @@ The most important thing in Kaggle is access to GPU computations. Just be aware 
 Under the 'app' directory, there are 2 separate notebook files. Before that, make sure you already have the weights that you saved while training the model. Use the weights you trained from NIH dataset on the multiprediction and Pneumonia dataset on uniprediction. I could not provide the weights because Github only allows 100MB max file size upload.
 You should probably see the output like this
 <div align="center">
-  <img src="./img/output.PNG">
+  <img src="./img/output.jpeg">
 </div>
