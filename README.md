@@ -70,7 +70,7 @@ show_acc_graph(a)
 
 Under 'Kaggle' directory, you can find 2 separate files. I recommend you to run these files on Kaggle ([NIH dataset]([https://www.kaggle.com/nih-chest-xrays/data](https://www.kaggle.com/nih-chest-xrays/data))). Register or sign in if you already have an account. All dataset and library has been set up for you. Create new notebook and just upload the notebook file from this repository and you are good to go.
 <div align="center">
-  <img src="../img/kaggle_new_notebook.PNG">
+  <img src="./img/kaggle_new_notebook.PNG">
 </div>
 The most important thing in Kaggle is access to GPU computations. Just be aware of your weekly quota. Each account is only given 30 hours per week.
 
@@ -79,5 +79,5 @@ The most important thing in Kaggle is access to GPU computations. Just be aware 
 Under the 'app' directory, there are 2 separate notebook files. Before that, make sure you already have the weights that you saved while training the model. Use the weights you trained from NIH dataset on the multiprediction and Pneumonia dataset on uniprediction. I could not provide the weights because Github only allows 100MB max file size upload.
 You should probably see the output like this
 <div align="center">
-  <img src="../img/output.PNG">
+  <img src="./img/output.PNG">
 </div>
